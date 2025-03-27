@@ -37,6 +37,12 @@ class PaymentController extends Controller
             ], 400);
         }
 
+        if (fmod($amount, 1) !== 0.00 && $gateway === 'easy_money') {
+            return response()->json([
+                'message' => 'EasyMoney doesnt support decimal amounts. Use an integer value (e.g., 100 instead of 100.50).'
+            ], 400);                
+        }
+
         $currency_find = Currency::where('name', $currency)->first();
 
         if ($currency_find == null) {
@@ -91,7 +97,7 @@ class PaymentController extends Controller
             ]);
 
             $service = new SuperWalletzGateway();
-            $service->handleWebhook($transaction_id, $status);
+            $webhook = $service->handleWebhook($transaction_id, $status);
             
             return response()->json(['status' => 'success']);
         } catch (\Exception $e) {

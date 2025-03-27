@@ -23,23 +23,6 @@ class EasyMoneyGateway implements PaymentGatewayInterface
     {
         $transaction_update = Transaction::findOrFail($transaction['id']);
 
-        if (fmod($transaction['amount'], 1) !== 0.00) {
-            $transaction_update->update([
-                'status' => 'failed',
-                'metadata' => ['error' => 'EasyMoney cannot process decimal amounts']
-            ]);
-            
-            PaymentLog::create([
-                'transaction_id' => $transaction_update->id,
-                'type' => 'response',
-                'payload' => 'Decimal amounts not allowed'
-            ]);
-
-            throw new \InvalidArgumentException(
-                "EasyMoney doesn't support decimal amounts. Use an integer value (e.g., 100 instead of 100.50)."
-            );
-        }
-
         $requestData = [
             'amount' => $transaction->amount,
             'currency' => $transaction->currency,

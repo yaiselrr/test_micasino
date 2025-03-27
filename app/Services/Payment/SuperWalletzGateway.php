@@ -34,7 +34,7 @@ class SuperWalletzGateway implements PaymentGatewayInterface
         PaymentLog::create([
             'transaction_id' => $transaction['id'],
             'type' => 'request',
-            'payload' => json_encode($requestData, true)
+            'payload' => $requestData
         ]);
 
         try {
@@ -45,12 +45,12 @@ class SuperWalletzGateway implements PaymentGatewayInterface
             PaymentLog::create([
                 'transaction_id' => $transaction['id'],
                 'type' => 'response',
-                'payload' => json_encode($responseData, true)
+                'payload' => $requestData
             ]);
 
             if ($response->successful()) {
                 $transaction->update([
-                    'status' => 'pending',
+                    'status' => 'success',
                     'transaction_id' => $responseData['transaction_id'] ?? null
                 ]);
             } else {
@@ -87,11 +87,16 @@ class SuperWalletzGateway implements PaymentGatewayInterface
         $webhook = Webhook::where('transaction_id', $transaction_id)->first();
 
         if ($webhook == null) {
-            Webhook::create([
+            $webhookCreate = Webhook::create([
                 'transaction_id' => $transaction_id,
                 'status' => $status
             ]);
+
+            return $webhookCreate;
         }
+
+        return null;
+
 
         // $transaction = Transaction::where('transaction_id', $transaction_id)->first();
 

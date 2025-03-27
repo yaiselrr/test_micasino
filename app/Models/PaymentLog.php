@@ -13,6 +13,10 @@ class PaymentLog extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'payload' => 'array'
+    ];
+
     public function transaction():BelongsTo
     {
         return $this->belongsTo(Transaction::class);
